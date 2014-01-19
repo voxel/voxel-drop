@@ -59,8 +59,26 @@ class DropPlugin
 
   loadScript: (file) ->
     @readAllText file, (text) =>
-      # TODO: load as plugin
-      eval(text)
+      # load as plugin
+      createPlugin = eval(text)
+      name = file.name
+      opts = {}
+
+      if not createPlugin
+        # didn't return factory constructor, assume not a plugin
+        console.log "Ignored non-plugin #{name}, returned #{createPlugin}"
+        return
+
+      # TODO: module.exports?
+
+      if not createPlugin.pluginInfo
+        console.log "Warning: plugin #{name} missing pluginInfo"
+
+      plugin = @game.plugins.instantiate createPlugin, name, opts
+      if not plugin
+        window.alert 'Failed to load plugin '+name
+      else
+        console.log "Loaded plugin: #{name} = #{plugin}"
       
   loadArtPack: (file, shouldAppend) ->
     @readAllData file, (arrayBuffer) =>
