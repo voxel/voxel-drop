@@ -1,0 +1,6 @@
+# voxel-drop
+
+## License
+
+MIT
+
