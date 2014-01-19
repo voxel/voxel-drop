@@ -11,19 +11,46 @@
   DropPlugin = (function() {
     function DropPlugin(game, opts) {
       this.game = game;
+      if (this.game.materials.artPacks == null) {
+        throw new Error('voxel-drop requires voxel-texture-shader with artPacks');
+      }
+      this.packs = this.game.materials.artPacks;
       this.body = ever(document.body);
       this.enable();
     }
 
     DropPlugin.prototype.enable = function() {
+      var _this = this;
       this.body.on('dragover', this.dragover = function(ev) {
         ev.stopPropagation();
         return ev.preventDefault();
       });
-      return this.body.on('drop', this.drop = function(ev) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        return console.log('drop', ev);
+      return this.body.on('drop', this.drop = function(mouseEvent) {
+        var file, files, reader, _i, _len, _results;
+        mouseEvent.stopPropagation();
+        mouseEvent.preventDefault();
+        console.log('drop', mouseEvent);
+        files = mouseEvent.target.files || mouseEvent.dataTransfer.files;
+        console.log('Dropped', files);
+        _results = [];
+        for (_i = 0, _len = files.length; _i < _len; _i++) {
+          file = files[_i];
+          console.log('Reading dropped', file);
+          reader = new FileReader();
+          ever(reader).on('load', function(readEvent) {
+            var arrayBuffer;
+            if (readEvent.total !== readEvent.loaded) {
+              return;
+            }
+            arrayBuffer = readEvent.currentTarget.result;
+            if (!mouseEvent.shiftKey) {
+              _this.packs.clear();
+            }
+            return _this.packs.addPack(arrayBuffer, file.name);
+          });
+          _results.push(reader.readAsArrayBuffer(file));
+        }
+        return _results;
       });
     };
 
