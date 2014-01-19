@@ -46,7 +46,8 @@
             if (!mouseEvent.shiftKey) {
               _this.packs.clear();
             }
-            return _this.packs.addPack(arrayBuffer, file.name);
+            _this.packs.addPack(arrayBuffer, file.name);
+            return _this.game.showAllChunks();
           });
           _results.push(reader.readAsArrayBuffer(file));
         }

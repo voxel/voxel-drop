@@ -43,6 +43,8 @@ class DropPlugin
             @packs.clear()
 
           @packs.addPack arrayBuffer, file.name
+          @game.showAllChunks()  # TODO: fix refresh textures
+          # TODO: refresh items too? inventory-window
 
         reader.readAsArrayBuffer(file)
 
