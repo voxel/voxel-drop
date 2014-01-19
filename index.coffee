@@ -31,20 +31,42 @@ class DropPlugin
       for file in files
         console.log 'Reading dropped',file
 
-        if file.name.endsWith('.zip')
+        if file.name.endsWith '.zip' # .zip = artpack
           shouldAppend = mouseEvent.shiftKey
-          @loadArtPack(file, shouldAppend)
+          @loadArtPack file, shouldAppend
+        else if file.name.endsWith '.js' # .js = script
+          @loadScript file
         else
-        # TODO: detect different files - .zip = artpack, .png = skin, .js/.coffee = plugin, .mca/=save
+          # TODO: detect different files - .png = skin, .js/.coffee = plugin, .mca/=save
+          # TODO: or by file magic headers?
           window.alert "Unrecognized file dropped: #{file.name}. Try dropping a resourcepack/artpack (.zip)"
-       
-  loadArtPack: (file, shouldAppend) ->
+
+  readAllFile: (file, asText, cb) ->
     reader = new FileReader()
     ever(reader).on 'load', (readEvent) =>
       return if readEvent.total != readEvent.loaded # TODO: progress bar
 
-      arrayBuffer = readEvent.currentTarget.result
+      result = readEvent.currentTarget.result
+      cb(result)
 
+    if asText
+      reader.readAsText(file)
+    else
+      reader.readAsArrayBuffer(file)
+
+  readAllText: (file, cb) ->
+    @readAllFile file, true, cb
+
+  readAllData: (file, cb) ->
+    @readAllFile file, false, cb
+
+  loadScript: (file) ->
+    @readAllText file, (text) =>
+      # TODO: load as plugin
+      eval(text)
+      
+  loadArtPack: (file, shouldAppend) ->
+    @readAllData file, (arrayBuffer) =>
       # add artwork pack
 
       if not shouldAppend
@@ -55,7 +77,6 @@ class DropPlugin
       @game.showAllChunks()  # TODO: fix refresh textures
       # TODO: refresh items too? inventory-window
 
-    reader.readAsArrayBuffer(file)
 
   disable: () ->
     @body.removeListener 'dragover', @dragover

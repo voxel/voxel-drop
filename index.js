@@ -41,6 +41,8 @@
           if (file.name.endsWith('.zip')) {
             shouldAppend = mouseEvent.shiftKey;
             _results.push(_this.loadArtPack(file, shouldAppend));
+          } else if (file.name.endsWith('.js')) {
+            _results.push(_this.loadScript(file));
           } else {
             _results.push(window.alert("Unrecognized file dropped: " + file.name + ". Try dropping a resourcepack/artpack (.zip)"));
           }
@@ -49,23 +51,49 @@
       });
     };
 
-    DropPlugin.prototype.loadArtPack = function(file, shouldAppend) {
+    DropPlugin.prototype.readAllFile = function(file, asText, cb) {
       var reader,
         _this = this;
       reader = new FileReader();
       ever(reader).on('load', function(readEvent) {
-        var arrayBuffer;
+        var result;
         if (readEvent.total !== readEvent.loaded) {
           return;
         }
-        arrayBuffer = readEvent.currentTarget.result;
+        result = readEvent.currentTarget.result;
+        return cb(result);
+      });
+      if (asText) {
+        return reader.readAsText(file);
+      } else {
+        return reader.readAsArrayBuffer(file);
+      }
+    };
+
+    DropPlugin.prototype.readAllText = function(file, cb) {
+      return this.readAllFile(file, true, cb);
+    };
+
+    DropPlugin.prototype.readAllData = function(file, cb) {
+      return this.readAllFile(file, false, cb);
+    };
+
+    DropPlugin.prototype.loadScript = function(file) {
+      var _this = this;
+      return this.readAllText(file, function(text) {
+        return eval(text);
+      });
+    };
+
+    DropPlugin.prototype.loadArtPack = function(file, shouldAppend) {
+      var _this = this;
+      return this.readAllData(file, function(arrayBuffer) {
         if (!shouldAppend) {
           _this.packs.clear();
         }
         _this.packs.addPack(arrayBuffer, file.name);
         return _this.game.showAllChunks();
       });
-      return reader.readAsArrayBuffer(file);
     };
 
     DropPlugin.prototype.disable = function() {
