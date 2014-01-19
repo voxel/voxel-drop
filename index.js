@@ -51,7 +51,7 @@
       });
     };
 
-    DropPlugin.prototype.readAllFile = function(file, asText, cb) {
+    DropPlugin.prototype.readAll = function(file, cb) {
       var reader,
         _this = this;
       reader = new FileReader();
@@ -63,19 +63,15 @@
         result = readEvent.currentTarget.result;
         return cb(result);
       });
-      if (asText) {
-        return reader.readAsText(file);
-      } else {
-        return reader.readAsArrayBuffer(file);
-      }
+      return reader;
     };
 
     DropPlugin.prototype.readAllText = function(file, cb) {
-      return this.readAllFile(file, true, cb);
+      return (this.readAll(file, cb)).readAsText(file);
     };
 
     DropPlugin.prototype.readAllData = function(file, cb) {
-      return this.readAllFile(file, false, cb);
+      return (this.readAll(file, cb)).readAsArrayBuffer(file);
     };
 
     DropPlugin.prototype.loadScript = function(file) {

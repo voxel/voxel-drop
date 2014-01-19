@@ -41,7 +41,7 @@ class DropPlugin
           # TODO: or by file magic headers?
           window.alert "Unrecognized file dropped: #{file.name}. Try dropping a resourcepack/artpack (.zip)"
 
-  readAllFile: (file, asText, cb) ->
+  readAll: (file, cb) ->
     reader = new FileReader()
     ever(reader).on 'load', (readEvent) =>
       return if readEvent.total != readEvent.loaded # TODO: progress bar
@@ -49,16 +49,13 @@ class DropPlugin
       result = readEvent.currentTarget.result
       cb(result)
 
-    if asText
-      reader.readAsText(file)
-    else
-      reader.readAsArrayBuffer(file)
+    return reader
 
   readAllText: (file, cb) ->
-    @readAllFile file, true, cb
+    (@readAll file, cb).readAsText file
 
   readAllData: (file, cb) ->
-    @readAllFile file, false, cb
+    (@readAll file, cb).readAsArrayBuffer file
 
   loadScript: (file) ->
     @readAllText file, (text) =>
