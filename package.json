@@ -10,7 +10,8 @@
     "voxel"
   ],
   "dependencies": {
-    "ever": "0.0.3"
+    "ever": "0.0.3",
+    "string.prototype.endswith": "~0.1.0"
   },
   "peerDependencies": {},
   "license": "MIT"

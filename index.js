@@ -4,6 +4,8 @@
 
   ever = require('ever');
 
+  require('string.prototype.endswith');
+
   module.exports = function(game, opts) {
     return new DropPlugin(game, opts);
   };
@@ -26,7 +28,7 @@
         return ev.preventDefault();
       });
       return this.body.on('drop', this.drop = function(mouseEvent) {
-        var file, files, reader, _i, _len, _results;
+        var file, files, shouldAppend, _i, _len, _results;
         mouseEvent.stopPropagation();
         mouseEvent.preventDefault();
         console.log('drop', mouseEvent);
@@ -36,23 +38,34 @@
         for (_i = 0, _len = files.length; _i < _len; _i++) {
           file = files[_i];
           console.log('Reading dropped', file);
-          reader = new FileReader();
-          ever(reader).on('load', function(readEvent) {
-            var arrayBuffer;
-            if (readEvent.total !== readEvent.loaded) {
-              return;
-            }
-            arrayBuffer = readEvent.currentTarget.result;
-            if (!mouseEvent.shiftKey) {
-              _this.packs.clear();
-            }
-            _this.packs.addPack(arrayBuffer, file.name);
-            return _this.game.showAllChunks();
-          });
-          _results.push(reader.readAsArrayBuffer(file));
+          if (file.name.endsWith('.zip')) {
+            shouldAppend = mouseEvent.shiftKey;
+            _results.push(_this.loadArtPack(file, shouldAppend));
+          } else {
+            _results.push(window.alert("Unrecognized file dropped: " + file.name + ". Try dropping a resourcepack/artpack (.zip)"));
+          }
         }
         return _results;
       });
+    };
+
+    DropPlugin.prototype.loadArtPack = function(file, shouldAppend) {
+      var reader,
+        _this = this;
+      reader = new FileReader();
+      ever(reader).on('load', function(readEvent) {
+        var arrayBuffer;
+        if (readEvent.total !== readEvent.loaded) {
+          return;
+        }
+        arrayBuffer = readEvent.currentTarget.result;
+        if (!shouldAppend) {
+          _this.packs.clear();
+        }
+        _this.packs.addPack(arrayBuffer, file.name);
+        return _this.game.showAllChunks();
+      });
+      return reader.readAsArrayBuffer(file);
     };
 
     DropPlugin.prototype.disable = function() {
