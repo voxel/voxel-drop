@@ -59,20 +59,35 @@ class DropPlugin
 
   loadScript: (file) ->
     @readAllText file, (text) =>
-      # load as plugin
-      createPlugin = eval(text)
+      # load as plugin TODO: improve this?
+      # TODO: require()'s.. http://wzrd.in/ browserify-as-a-service
+      # use Function constructor instead of eval() to control scope
+      try
+        createCreatePlugin = new Function("
+var module = {exports: {}};
+var require = #{@game.plugins.require};
+
+#{text}
+
+return module.exports;
+")
+      catch e
+        window.alert "Exception loading plugin #{file.name}: #{e}"
+        throw e
+
+      createPlugin = createCreatePlugin()
       name = file.name
       opts = {}
 
-      if not createPlugin
+      console.log "loadScript #file.name = #{createPlugin}"
+
+      if not createPlugin or typeof createPlugin != 'function'
         # didn't return factory constructor, assume not a plugin
         console.log "Ignored non-plugin #{name}, returned #{createPlugin}"
         return
 
-      # TODO: module.exports?
-
-      if not createPlugin.pluginInfo
-        console.log "Warning: plugin #{name} missing pluginInfo"
+      #if not createPlugin.pluginInfo
+      #  console.log "Warning: plugin #{name} missing pluginInfo"
 
       plugin = @game.plugins.instantiate createPlugin, name, opts
       if not plugin

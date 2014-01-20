@@ -77,16 +77,21 @@
     DropPlugin.prototype.loadScript = function(file) {
       var _this = this;
       return this.readAllText(file, function(text) {
-        var createPlugin, name, opts, plugin;
-        createPlugin = eval(text);
+        var createCreatePlugin, createPlugin, e, name, opts, plugin;
+        try {
+          createCreatePlugin = new Function("var module = {exports: {}};var require = " + _this.game.plugins.require + ";" + text + "return module.exports;");
+        } catch (_error) {
+          e = _error;
+          window.alert("Exception loading plugin " + file.name + ": " + e);
+          throw e;
+        }
+        createPlugin = createCreatePlugin();
         name = file.name;
         opts = {};
-        if (!createPlugin) {
+        console.log("loadScript #file.name = " + createPlugin);
+        if (!createPlugin || typeof createPlugin !== 'function') {
           console.log("Ignored non-plugin " + name + ", returned " + createPlugin);
           return;
-        }
-        if (!createPlugin.pluginInfo) {
-          console.log("Warning: plugin " + name + " missing pluginInfo");
         }
         plugin = _this.game.plugins.instantiate(createPlugin, name, opts);
         if (!plugin) {
