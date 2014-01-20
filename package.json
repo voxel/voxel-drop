@@ -1,6 +1,6 @@
 {
   "name": "voxel-drop",
-  "description": "",
+  "description": "drag and drop various types of files to load them into your game (voxel.js plugin)",
   "version": "0.0.1",
   "repository": {
     "type": "git",
