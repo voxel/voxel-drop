@@ -13,6 +13,9 @@
   DropPlugin = (function() {
     function DropPlugin(game, opts) {
       this.game = game;
+      if (!this.game.isClient) {
+        return;
+      }
       if (this.game.materials.artPacks == null) {
         throw new Error('voxel-drop requires voxel-texture-shader with artPacks');
       }

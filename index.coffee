@@ -6,6 +6,8 @@ module.exports = (game, opts) ->
 
 class DropPlugin
   constructor: (@game, opts) ->
+    return if not @game.isClient
+
     if not @game.materials.artPacks?
       throw new Error 'voxel-drop requires voxel-texture-shader with artPacks'
 
