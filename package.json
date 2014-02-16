@@ -11,7 +11,8 @@
   ],
   "dependencies": {
     "ever": "0.0.3",
-    "string.prototype.endswith": "~0.1.0"
+    "string.prototype.endswith": "~0.1.0",
+    "coffee-script": "~1.7.1"
   },
   "peerDependencies": {},
   "license": "MIT"

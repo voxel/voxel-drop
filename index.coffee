@@ -1,4 +1,5 @@
 ever = require 'ever'
+coffee_script = require 'coffee-script'
 require 'string.prototype.endswith' # adds String#endsWith if not available - on Chrome; Firefox has it: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
 
 module.exports = (game, opts) ->
@@ -36,7 +37,9 @@ class DropPlugin
         if file.name.endsWith '.zip' # .zip = artpack
           shouldAppend = mouseEvent.shiftKey
           @loadArtPack file, shouldAppend
-        else if file.name.endsWith '.js' # .js = script
+        else if file.name.endsWith '.js' # .js = JavaScript 
+          @loadScript file
+        else if file.name.endsWith '.coffee' # .coffee = CoffeeScript
           @loadScript file
         else
           # TODO: detect different files - .png = skin, .js/.coffee = plugin, .mca/=save
@@ -60,7 +63,12 @@ class DropPlugin
     (@readAll file, cb).readAsArrayBuffer file
 
   loadScript: (file) ->
-    @readAllText file, (text) =>
+    @readAllText file, (rawText) =>
+      if file.name.endsWith '.coffee'
+        text = coffee_script.compile rawText
+      else
+        text = rawText
+
       # load as plugin TODO: improve this?
       # TODO: require()'s.. http://wzrd.in/ browserify-as-a-service
       # use Function constructor instead of eval() to control scope
