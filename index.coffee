@@ -34,7 +34,8 @@ class DropPlugin
       for file in files
         console.log 'Reading dropped',file
 
-        if file.name.endsWith '.zip' # .zip = artpack
+        if file.name.endsWith('.zip') or # .zip = artpack
+            file.name.endsWith('.jar') # .jar = artpack too, MC jars (TODO: java plugins via doppio?)
           shouldAppend = mouseEvent.shiftKey
           @loadArtPack file, shouldAppend
         else if file.name.endsWith '.js' # .js = JavaScript 

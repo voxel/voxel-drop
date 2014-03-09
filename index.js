@@ -43,7 +43,7 @@
           for (_i = 0, _len = files.length; _i < _len; _i++) {
             file = files[_i];
             console.log('Reading dropped', file);
-            if (file.name.endsWith('.zip')) {
+            if (file.name.endsWith('.zip') || file.name.endsWith('.jar')) {
               shouldAppend = mouseEvent.shiftKey;
               _results.push(_this.loadArtPack(file, shouldAppend));
             } else if (file.name.endsWith('.js')) {
