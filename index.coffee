@@ -114,8 +114,14 @@ return module.exports;
         # start over, replacing all current packs - unless shift is held down (then add to)
         @packs.clear()
 
+      @packs.once 'refresh', () =>
+        # TODO: listen on proper event instead of guessing timeout
+        # see https://github.com/deathcap/voxel-drop/issues/1
+        window.setTimeout () =>
+          @game.showAllChunks()
+        , 5000
       @packs.addPack arrayBuffer, file.name
-      @game.showAllChunks()  # TODO: fix refresh textures
+
       # TODO: refresh items too? inventory-window
 
 

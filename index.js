@@ -123,8 +123,12 @@
           if (!shouldAppend) {
             _this.packs.clear();
           }
-          _this.packs.addPack(arrayBuffer, file.name);
-          return _this.game.showAllChunks();
+          _this.packs.once('refresh', function() {
+            return window.setTimeout(function() {
+              return _this.game.showAllChunks();
+            }, 5000);
+          });
+          return _this.packs.addPack(arrayBuffer, file.name);
         };
       })(this));
     };
