@@ -36,8 +36,8 @@ class DropPlugin
 
         if file.name.endsWith('.zip') or # .zip = artpack
             file.name.endsWith('.jar') # .jar = artpack too, MC jars (TODO: java plugins via doppio?)
-          shouldAppend = mouseEvent.shiftKey
-          @loadArtPack file, shouldAppend
+          shouldClear = mouseEvent.shiftKey
+          @loadArtPack file, shouldClear
         else if file.name.endsWith '.js' # .js = JavaScript 
           @loadScript file
         else if file.name.endsWith '.coffee' # .coffee = CoffeeScript
@@ -106,11 +106,11 @@ return module.exports;
       else
         console.log "Loaded plugin: #{name} = #{plugin}"
       
-  loadArtPack: (file, shouldAppend) ->
+  loadArtPack: (file, shouldClear) ->
     @readAllData file, (arrayBuffer) =>
       # add artwork pack
 
-      if not shouldAppend
+      if shouldClear
         # start over, replacing all current packs - unless shift is held down (then add to)
         @packs.clear()
 

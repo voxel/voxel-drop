@@ -33,7 +33,7 @@
       });
       return this.body.on('drop', this.drop = (function(_this) {
         return function(mouseEvent) {
-          var file, files, shouldAppend, _i, _len, _results;
+          var file, files, shouldClear, _i, _len, _results;
           mouseEvent.stopPropagation();
           mouseEvent.preventDefault();
           console.log('drop', mouseEvent);
@@ -44,8 +44,8 @@
             file = files[_i];
             console.log('Reading dropped', file);
             if (file.name.endsWith('.zip') || file.name.endsWith('.jar')) {
-              shouldAppend = mouseEvent.shiftKey;
-              _results.push(_this.loadArtPack(file, shouldAppend));
+              shouldClear = mouseEvent.shiftKey;
+              _results.push(_this.loadArtPack(file, shouldClear));
             } else if (file.name.endsWith('.js')) {
               _results.push(_this.loadScript(file));
             } else if (file.name.endsWith('.coffee')) {
@@ -117,10 +117,10 @@
       })(this));
     };
 
-    DropPlugin.prototype.loadArtPack = function(file, shouldAppend) {
+    DropPlugin.prototype.loadArtPack = function(file, shouldClear) {
       return this.readAllData(file, (function(_this) {
         return function(arrayBuffer) {
-          if (!shouldAppend) {
+          if (shouldClear) {
             _this.packs.clear();
           }
           _this.packs.once('refresh', function() {
