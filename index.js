@@ -35,7 +35,7 @@
       });
       return this.body.on('drop', this.drop = (function(_this) {
         return function(mouseEvent) {
-          var file, files, shouldClear, _i, _len, _results;
+          var file, files, shouldAdd, shouldClear, _i, _len, _results;
           mouseEvent.stopPropagation();
           mouseEvent.preventDefault();
           console.log('drop', mouseEvent);
@@ -53,7 +53,8 @@
             } else if (file.name.endsWith('.coffee')) {
               _results.push(_this.loadScript(file));
             } else if (file.name.endsWith('.dat')) {
-              _results.push(_this.loadPlayerDat(file));
+              shouldAdd = mouseEvent.shiftKey;
+              _results.push(_this.loadPlayerDat(file, shouldAdd));
             } else {
               _results.push(window.alert("Unrecognized file dropped: " + file.name + ". Try dropping a resourcepack/artpack (.zip)"));
             }
@@ -137,7 +138,7 @@
       })(this));
     };
 
-    DropPlugin.prototype.loadPlayerDat = function(file) {
+    DropPlugin.prototype.loadPlayerDat = function(file, shouldAdd) {
       return this.readAllData(file, (function(_this) {
         return function(arrayBuffer) {
           var carryInventory, _ref;
@@ -148,9 +149,16 @@
           return playerdat.loadInventory(arrayBuffer, function(inventory) {
             var i, _i, _ref1, _results;
             if (inventory != null) {
+              if (!shouldAdd) {
+                carryInventory.clear();
+              }
               _results = [];
               for (i = _i = 0, _ref1 = inventory.size(); 0 <= _ref1 ? _i < _ref1 : _i > _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
-                _results.push(carryInventory.set(i, inventory.get(i)));
+                if (shouldAdd) {
+                  _results.push(carryInventory.give(inventory.get(i)));
+                } else {
+                  _results.push(carryInventory.set(i, inventory.get(i)));
+                }
               }
               return _results;
             }

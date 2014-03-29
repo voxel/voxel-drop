@@ -45,7 +45,8 @@ class DropPlugin
         else if file.name.endsWith '.coffee' # .coffee = CoffeeScript
           @loadScript file
         else if file.name.endsWith '.dat' # .dat = player data file
-          @loadPlayerDat file
+          shouldAdd = mouseEvent.shiftKey
+          @loadPlayerDat file, shouldAdd
         else
           # TODO: detect different files - .png = skin, .mca/=save
           # TODO: or by file magic headers?
@@ -128,17 +129,22 @@ return module.exports;
 
       # TODO: refresh items too? inventory-window
 
-  loadPlayerDat: (file) ->
+  loadPlayerDat: (file, shouldAdd) ->
     @readAllData file, (arrayBuffer) =>
       carryInventory = @game.plugins.get('voxel-carry')?.inventory
       return if not carryInventory?
 
       playerdat.loadInventory arrayBuffer, (inventory) ->
-        # TODO: option to add to, instead of replacing (shift?)
-
         if inventory?
+          carryInventory.clear() if not shouldAdd # start fresh
+
           for i in [0...inventory.size()]
-            carryInventory.set i, inventory.get(i)
+            if shouldAdd
+              # add anywhere, appending
+              carryInventory.give inventory.get(i)
+            else
+              # copy specific slots, replacing
+              carryInventory.set i, inventory.get(i)
 
   disable: () ->
     @body.removeListener 'dragover', @dragover
