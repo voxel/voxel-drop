@@ -1,5 +1,7 @@
 ever = require 'ever'
 coffee_script = require 'coffee-script'
+playerdat = require 'playerdat'
+
 require 'string.prototype.endswith' # adds String#endsWith if not available - on Chrome; Firefox has it: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
 
 module.exports = (game, opts) ->
@@ -42,8 +44,10 @@ class DropPlugin
           @loadScript file
         else if file.name.endsWith '.coffee' # .coffee = CoffeeScript
           @loadScript file
+        else if file.name.endsWith '.dat' # .dat = player data file
+          @loadPlayerDat file
         else
-          # TODO: detect different files - .png = skin, .js/.coffee = plugin, .mca/=save
+          # TODO: detect different files - .png = skin, .mca/=save
           # TODO: or by file magic headers?
           window.alert "Unrecognized file dropped: #{file.name}. Try dropping a resourcepack/artpack (.zip)"
 
@@ -124,6 +128,17 @@ return module.exports;
 
       # TODO: refresh items too? inventory-window
 
+  loadPlayerDat: (file) ->
+    @readAllData file, (arrayBuffer) =>
+      carryInventory = @game.plugins.get('voxel-carry')?.inventory
+      return if not carryInventory?
+
+      playerdat.loadInventory arrayBuffer, (inventory) ->
+        # TODO: option to add to, instead of replacing (shift?)
+
+        if inventory?
+          for i in [0...inventory.size()]
+            carryInventory.set i, inventory.get(i)
 
   disable: () ->
     @body.removeListener 'dragover', @dragover
