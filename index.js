@@ -16,14 +16,15 @@
 
   DropPlugin = (function() {
     function DropPlugin(game, opts) {
+      var _ref, _ref1, _ref2, _ref3;
       this.game = game;
       if (!this.game.isClient) {
         return;
       }
-      if (this.game.materials.artPacks == null) {
-        throw new Error('voxel-drop requires voxel-texture-shader with artPacks');
+      this.packs = (_ref = (_ref1 = this.game.materials) != null ? _ref1.artPacks : void 0) != null ? _ref : (_ref2 = this.game.plugins) != null ? (_ref3 = _ref2.get('voxel-stitch')) != null ? _ref3.artpacks : void 0 : void 0;
+      if (this.packs == null) {
+        throw new Error('voxel-drop requires voxel-stitch or voxel-texture-shader with artPacks');
       }
-      this.packs = this.game.materials.artPacks;
       this.body = ever(document.body);
       this.enable();
     }
@@ -130,7 +131,8 @@
           }
           _this.packs.once('refresh', function() {
             return window.setTimeout(function() {
-              return _this.game.showAllChunks();
+              var _base;
+              return typeof (_base = _this.game).showAllChunks === "function" ? _base.showAllChunks() : void 0;
             }, 5000);
           });
           return _this.packs.addPack(arrayBuffer, file.name);

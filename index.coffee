@@ -11,10 +11,9 @@ class DropPlugin
   constructor: (@game, opts) ->
     return if not @game.isClient
 
-    if not @game.materials.artPacks?
-      throw new Error 'voxel-drop requires voxel-texture-shader with artPacks'
-
-    @packs = @game.materials.artPacks
+    @packs = @game.materials?.artPacks ? @game.plugins?.get('voxel-stitch')?.artpacks
+    if not @packs?
+      throw new Error 'voxel-drop requires voxel-stitch or voxel-texture-shader with artPacks'
 
     @body = ever(document.body)
     @enable()
@@ -123,7 +122,7 @@ return module.exports;
         # TODO: listen on proper event instead of guessing timeout
         # see https://github.com/deathcap/voxel-drop/issues/1
         window.setTimeout () =>
-          @game.showAllChunks()
+          @game.showAllChunks?()
         , 5000
       @packs.addPack arrayBuffer, file.name
 
