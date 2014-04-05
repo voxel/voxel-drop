@@ -10,7 +10,7 @@
     "voxel"
   ],
   "dependencies": {
-    "playerdat": "git://github.com/deathcap/playerdat.git#c3c45a4ce278d5c79c1d0d511653fc5587cc9fbd",
+    "playerdat": "^0.1.0",
     "ever": "0.0.3",
     "string.prototype.endswith": "~0.1.0",
     "coffee-script": "~1.7.1"
