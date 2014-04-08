@@ -10,7 +10,7 @@
     "voxel"
   ],
   "dependencies": {
-    "playerdat": "^0.1.0",
+    "playerdat": "^0.1.1",
     "ever": "0.0.3",
     "string.prototype.endswith": "~0.1.0",
     "coffee-script": "~1.7.1"
