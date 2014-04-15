@@ -14,6 +14,10 @@
     return new DropPlugin(game, opts);
   };
 
+  module.exports.pluginInfo = {
+    loadAfter: ['voxel-stitch']
+  };
+
   DropPlugin = (function() {
     function DropPlugin(game, opts) {
       var _ref, _ref1, _ref2, _ref3;

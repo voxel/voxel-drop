@@ -7,6 +7,9 @@ require 'string.prototype.endswith' # adds String#endsWith if not available - on
 module.exports = (game, opts) ->
   return new DropPlugin(game, opts)
 
+module.exports.pluginInfo =
+  loadAfter: ['voxel-stitch']
+
 class DropPlugin
   constructor: (@game, opts) ->
     return if not @game.isClient
