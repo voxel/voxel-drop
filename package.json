@@ -2,7 +2,7 @@
   "name": "voxel-drop",
   "description": "drag and drop various types of files to load them into your game (voxel.js plugin)",
   "version": "0.1.3",
-  "main": "drop.coffee",
+  "main": "drop.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:deathcap/voxel-drop.git"
@@ -15,13 +15,7 @@
   ],
   "dependencies": {
     "playerdat": "^0.1.1",
-    "string.prototype.endswith": "^0.1.0",
-    "coffee-script": "^1.7.1"
-  },
-  "browserify": {
-    "transform": [
-      "coffeeify"
-    ]
+    "string.prototype.endswith": "^0.1.0"
   },
   "license": "MIT"
 }
