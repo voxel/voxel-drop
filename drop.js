@@ -1,161 +1,198 @@
-coffee_script = require 'coffee-script'
-playerdat = require 'playerdat'
+'use strict';
 
-require 'string.prototype.endswith' # adds String#endsWith if not available - on Chrome; Firefox has it: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
+const playerdat = require('playerdat');
 
-module.exports = (game, opts) ->
+module.exports = (game, opts) => {
   return new DropPlugin(game, opts)
+};
 
-module.exports.pluginInfo =
+module.exports.pluginInfo = {
   loadAfter: ['voxel-stitch']
+};
 
 class DropPlugin
-  constructor: (@game, opts) ->
-    return if not @game.isClient
+{
+  constructor(game, opts) {
+    this.game = game;
 
-    @packs = @game.materials?.artPacks ? @game.plugins?.get('voxel-stitch')?.artpacks
-    if not @packs?
-      throw new Error 'voxel-drop requires voxel-stitch or voxel-texture-shader with artPacks'
+    if (!game.isClient) return;
 
-    @enable()
+    if (this.game.materials && this.game.materials.artPacks) {
+      this.packs = this.game.materials.artPacks;
+    } else if (this.game.plugins.get('voxel-stitch')) {
+      this.packs = this.game.plugins.get('voxel-stitch').artpacks;
+    }
 
-  enable: () ->
+    if (!this.packs) {
+      throw new Error('voxel-drop requires voxel-stitch or voxel-texture-shader with artPacks');
+    }
 
-    document.body.addEventListener 'dragover', @dragover = (ev) ->
-      ev.stopPropagation()
-      ev.preventDefault()
+    this.enable();
+  }
 
-    document.body.addEventListener 'drop', @drop = (mouseEvent) =>
-      mouseEvent.stopPropagation()
-      mouseEvent.preventDefault()
-      console.log 'drop',mouseEvent
+  enable() {
+    document.body.addEventListener('dragover', this.dragover = (ev) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+    });
 
-      files = mouseEvent.target.files || mouseEvent.dataTransfer.files
+    document.body.addEventListener('drop', this.drop = (mouseEvent) => {
+      mouseEvent.stopPropagation();
+      mouseEvent.preventDefault();
+      console.log('drop',mouseEvent);
 
-      console.log 'Dropped',files
-      for file in files
-        console.log 'Reading dropped',file
+      const files = mouseEvent.target.files || mouseEvent.dataTransfer.files;
 
-        if file.name.endsWith('.zip') or # .zip = artpack
-            file.name.endsWith('.jar') # .jar = artpack too, MC jars (TODO: java plugins via doppio?)
-          shouldClear = mouseEvent.shiftKey
-          @loadArtPack file, shouldClear
-        else if file.name.endsWith '.js' # .js = JavaScript 
-          @loadScript file
-        else if file.name.endsWith '.coffee' # .coffee = CoffeeScript
-          @loadScript file
-        else if file.name.endsWith '.dat' # .dat = player data file
-          shouldAdd = mouseEvent.shiftKey
-          @loadPlayerDat file, shouldAdd
-        else
-          # TODO: detect different files - .png = skin, .mca/=save
-          # TODO: or by file magic headers?
-          window.alert "Unrecognized file dropped: #{file.name}. Try dropping a resourcepack/artpack (.zip)"
+      console.log('Dropped',files);
+      //for (let file of files) {
+      for (let i = 0; i < files.length; ++i) {
+        const file = files[i];
+        console.log('Reading dropped',file);
 
-  readAll: (file, cb) ->
-    reader = new FileReader()
-    reader.onload = (readEvent) =>
-      return if readEvent.total != readEvent.loaded # TODO: progress bar
+        if (file.name.endsWith('.zip') || // .zip = artpack
+            file.name.endsWith('.jar')) { //  .jar = artpack too, MC jars (TODO: java plugins via doppio?)
+          const shouldClear = mouseEvent.shiftKey;
+          this.loadArtPack(file, shouldClear);
+        } else if (file.name.endsWith('.js')) { // .js = JavaScript 
+          this.loadScript(file);
+        } else if (file.name.endsWith('.dat')) { // .dat = player data file
+          const shouldAdd = mouseEvent.shiftKey;
+          this.loadPlayerDat(file, shouldAdd);
+        } else {
+          // TODO: detect different files - .png = skin, .mca/=save
+          // TODO: or by file magic headers?
+          window.alert(`Unrecognized file dropped: ${file.name}. Try dropping a resourcepack/artpack (.zip)`);
+        }
+      }
+    });
+  }
 
-      result = readEvent.currentTarget.result
-      cb(result)
+  readAll(file, cb) {
+    const reader = new FileReader();
 
-    reader.onerror = (errorEvent) =>
-      console.log errorEvent
-      window.alert "Error reading file: #{errorEvent}"
+    reader.onload = (readEvent) => {
+      if (readEvent.total !== readEvent.loaded) {
+        return; // TODO: progress bar
+      }
 
-    reader.onabort = (errorEvent) =>
-      console.log errorEvent
-      window.alert "Aborted reading file: #{errorEvent}"
+      const result = readEvent.currentTarget.result;
+      cb(result);
+    };
 
+    reader.onerror = (errorEvent) => {
+      console.log(errorEvent);
+      window.alert(`Error reading file: ${errorEvent}`);
+    };
 
-    return reader
+    reader.onabort = (errorEvent) => {
+      console.log(errorEvent);
+      window.alert(`Aborted reading file: ${errorEvent}`);
+    }
 
-  readAllText: (file, cb) ->
-    (@readAll file, cb).readAsText file
+    return reader;
+  }
 
-  readAllData: (file, cb) ->
-    (@readAll file, cb).readAsArrayBuffer file
+  readAllText(file, cb) {
+    (this.readAll(file, cb)).readAsText(file);
+  }
 
-  loadScript: (file) ->
-    @readAllText file, (rawText) =>
-      if file.name.endsWith '.coffee'
-        text = coffee_script.compile rawText
-      else
-        text = rawText
+  readAllData(file, cb) {
+    (this.readAll(file, cb)).readAsArrayBuffer(file);
+  }
 
-      # load as plugin TODO: improve this?
-      # TODO: require()'s.. http://wzrd.in/ browserify-as-a-service
-      # use Function constructor instead of eval() to control scope
-      try
-        createCreatePlugin = new Function("
+  loadScript(file) {
+    this.readAllText(file, (text) => {
+      // load as plugin TODO: improve this?
+      // TODO: require()'s.. http://wzrd.in/ browserify-as-a-service
+      // use Function constructor instead of eval() to control scope
+      try {
+        const createCreatePlugin = new Function(`
 var module = {exports: {}};
-var require = #{@game.plugins.require};
+var require = ${this.game.plugins.require};
 
-#{text}
+${text}
 
 return module.exports;
-")
-      catch e
-        window.alert "Exception loading plugin #{file.name}: #{e}"
-        throw e
+`);
+      } catch (e) {
+        window.alert(`Exception loading plugin ${file.name}: ${e}`);
+        throw e;
+      }
 
-      createPlugin = createCreatePlugin()
-      name = file.name
-      opts = {}
+      const createPlugin = createCreatePlugin();
+      const name = file.name;
+      const opts = {};
 
-      console.log "loadScript #file.name = #{createPlugin}"
+      console.log(`loadScript #file.name = ${createPlugin}`);
 
-      if not createPlugin or typeof createPlugin != 'function'
-        # didn't return factory constructor, assume not a plugin
-        console.log "Ignored non-plugin #{name}, returned #{createPlugin}"
-        return
+      if (!createPlugin || typeof createPlugin !== 'function') {
+        // didn't return factory constructor, assume not a plugin
+        console.log(`Ignored non-plugin ${name}, returned ${createPlugin}`);
+        return;
+      }
 
-      #if not createPlugin.pluginInfo
-      #  console.log "Warning: plugin #{name} missing pluginInfo"
+      //if not createPlugin.pluginInfo
+      //  console.log "Warning: plugin #{name} missing pluginInfo"
 
-      plugin = @game.plugins.instantiate createPlugin, name, opts
-      if not plugin
-        window.alert 'Failed to load plugin '+name
-      else
-        console.log "Loaded plugin: #{name} = #{plugin}"
+      const plugin = this.game.plugins.instantiate(createPlugin, name, opts);
+      if (!plugin) {
+        window.alert('Failed to load plugin '+name);
+      } else {
+        console.log(`Loaded plugin: ${name} = ${plugin}`);
+      }
+    });
+  }
       
-  loadArtPack: (file, shouldClear) ->
-    @readAllData file, (arrayBuffer) =>
-      # add artwork pack
+  loadArtPack(file, shouldClear) {
+    this.readAllData(file, (arrayBuffer) => {
+      // add artwork pack
 
-      if shouldClear
-        # start over, replacing all current packs - unless shift is held down (then add to)
-        @packs.clear()
+      if (shouldClear) {
+        // start over, replacing all current packs - unless shift is held down (then add to)
+        this.packs.clear();
+      }
 
-      @packs.once 'refresh', () =>
-        # TODO: listen on proper event instead of guessing timeout
-        # see https://github.com/deathcap/voxel-drop/issues/1
-        window.setTimeout () =>
-          @game.showAllChunks?()
-        , 5000
-      @packs.addPack arrayBuffer, file.name
+      this.packs.once('refresh', () => {
+        // TODO: listen on proper event instead of guessing timeout
+        // see https://github.com/deathcap/voxel-drop/issues/1
+        window.setTimeout(() => {
+          this.game.showAllChunks();
+        }, 5000);
+      });
 
-      # TODO: refresh items too? inventory-window
+      this.packs.addPack(arrayBuffer, file.name);
 
-  loadPlayerDat: (file, shouldAdd) ->
-    @readAllData file, (arrayBuffer) =>
-      carryInventory = @game.plugins.get('voxel-carry')?.inventory
-      return if not carryInventory?
+      // TODO: refresh items too? inventory-window
+    })
+  }
 
-      playerdat.loadInventory arrayBuffer, (inventory) ->
-        if inventory?
-          carryInventory.clear() if not shouldAdd # start fresh
+  loadPlayerDat(file, shouldAdd) {
+    this.readAllData(file, (arrayBuffer) => {
+      if (!this.game.plugins.get('voxel-carry')) return;
 
-          for i in [0...inventory.size()]
-            if shouldAdd
-              # add anywhere, appending
-              carryInventory.give inventory.get(i)
-            else
-              # copy specific slots, replacing
-              carryInventory.set i, inventory.get(i)
+      const carryInventory = this.game.plugins.get('voxel-carry').inventory;
 
-  disable: () ->
-    @body.removeListener 'dragover', @dragover
-    @body.removeListener 'drop', @drop
+      playerdat.loadInventory(arrayBuffer, (inventory) => {
+        if (inventory) {
+          if (!shouldAdd) carryInventory.clear(); // start fresh
+
+          for (let i = 0; i < inventory.size; ++i) {
+            if (shouldAdd) {
+              // add anywhere, appending
+              carryInventory.give(inventory.get(i));
+            } else {
+              // copy specific slots, replacing
+              carryInventory.set(i, inventory.get(i));
+            }
+          }
+        }
+      });
+    });
+  }
+
+  disable() {
+    this.body.removeListener('dragover', this.dragover);
+    this.body.removeListener('drop', this.drop);
+  }
+}
 
