@@ -62,6 +62,10 @@ class DropPlugin
       result = readEvent.currentTarget.result
       cb(result)
 
+    ever(reader).on 'error', (errorEvent) =>
+      console.log errorEvent
+      window.alert "Error reading file: #{errorEvent}"
+
     return reader
 
   readAllText: (file, cb) ->
