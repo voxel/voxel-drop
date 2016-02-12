@@ -54,17 +54,17 @@ class DropPlugin
 
   readAll: (file, cb) ->
     reader = new FileReader()
-    reader.addEventListener 'load', (readEvent) =>
+    reader.onload = (readEvent) =>
       return if readEvent.total != readEvent.loaded # TODO: progress bar
 
       result = readEvent.currentTarget.result
       cb(result)
 
-    reader.addEventListener 'error', (errorEvent) =>
+    reader.onerror = (errorEvent) =>
       console.log errorEvent
       window.alert "Error reading file: #{errorEvent}"
 
-    reader.addEventListener 'abort', (errorEvent) =>
+    reader.onabort = (errorEvent) =>
       console.log errorEvent
       window.alert "Aborted reading file: #{errorEvent}"
 
