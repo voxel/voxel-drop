@@ -64,6 +64,11 @@ class DropPlugin
       console.log errorEvent
       window.alert "Error reading file: #{errorEvent}"
 
+    reader.addEventListener 'abort', (errorEvent) =>
+      console.log errorEvent
+      window.alert "Aborted reading file: #{errorEvent}"
+
+
     return reader
 
   readAllText: (file, cb) ->
