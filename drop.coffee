@@ -1,4 +1,3 @@
-ever = require 'ever'
 coffee_script = require 'coffee-script'
 playerdat = require 'playerdat'
 
@@ -18,16 +17,15 @@ class DropPlugin
     if not @packs?
       throw new Error 'voxel-drop requires voxel-stitch or voxel-texture-shader with artPacks'
 
-    @body = ever(document.body)
     @enable()
 
   enable: () ->
 
-    @body.on 'dragover', @dragover = (ev) ->
+    document.body.addEventListener 'dragover', @dragover = (ev) ->
       ev.stopPropagation()
       ev.preventDefault()
 
-    @body.on 'drop', @drop = (mouseEvent) =>
+    document.body.addEventListener 'drop', @drop = (mouseEvent) =>
       mouseEvent.stopPropagation()
       mouseEvent.preventDefault()
       console.log 'drop',mouseEvent
@@ -56,13 +54,13 @@ class DropPlugin
 
   readAll: (file, cb) ->
     reader = new FileReader()
-    ever(reader).on 'load', (readEvent) =>
+    reader.addEventListener 'load', (readEvent) =>
       return if readEvent.total != readEvent.loaded # TODO: progress bar
 
       result = readEvent.currentTarget.result
       cb(result)
 
-    ever(reader).on 'error', (errorEvent) =>
+    reader.addEventListener 'error', (errorEvent) =>
       console.log errorEvent
       window.alert "Error reading file: #{errorEvent}"
 
