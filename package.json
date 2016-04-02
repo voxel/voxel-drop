@@ -14,7 +14,7 @@
     "drop"
   ],
   "dependencies": {
-    "playerdat": "^0.1.1",
+    "playerdat": "^1.0.0",
     "string.prototype.endswith": "^0.1.0"
   },
   "license": "MIT"
